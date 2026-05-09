@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Clean Energy Atlas — Global Clean Energy Infrastructure</title>
+  <meta name="description" content="Interactive global map of clean energy infrastructure: wind, solar, hydro, geothermal, nuclear, hydrogen, storage, and data centers worldwide.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css">
+  <link rel="stylesheet" href="style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><text y='28' font-size='28'>⚡</text></svg>">
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-6BL2V7DF3B"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-6BL2V7DF3B');
+  </script>
+</head>
+<body class="theme-light">
+
+  <!-- LOADING SCREEN -->
+  <div id="loading-screen">
+    <div class="loading-content">
+      <div class="loading-logo">⚡</div>
+      <div class="loading-title">Clean Energy Atlas</div>
+      <div class="loading-subtitle">GLOBAL CLEAN ENERGY INFRASTRUCTURE</div>
+      <div class="loading-bar-container">
+        <div class="loading-bar" id="loading-bar"></div>
+      </div>
+      <div class="loading-status" id="loading-status">Initializing...</div>
+      <div class="loading-count" id="loading-count">2,091 projects · 10 layers · 126+ countries</div>
+    </div>
+  </div>
+
+  <!-- HEADER -->
+  <header id="app-header">
+    <div class="header-left">
+      <div class="logo">
+        <svg class="logo-icon" viewBox="0 0 28 28" fill="none" aria-label="Clean Energy Atlas">
+          <circle cx="14" cy="14" r="13" stroke="currentColor" stroke-width="1.5" opacity="0.3"/>
+          <path d="M16 4L10 15h5l-3 11 9-13h-6l3-9z" fill="#fbbf24" stroke="#fbbf24" stroke-width="0.5" stroke-linejoin="round"/>
+        </svg>
+        <div class="logo-text">
+          <span class="logo-name">Clean Energy Atlas</span>
+          <span class="logo-tagline">Global Clean Energy Infrastructure</span>
+        </div>
+      </div>
+    </div>
+    <div class="header-center">
+      <div class="search-container">
+        <svg class="search-icon" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd"/></svg>
+        <input type="text" id="search-input" placeholder="Search projects, countries, operators..." autocomplete="off">
+        <div id="search-results" class="search-results"></div>
+      </div>
+    </div>
+    <div class="header-right">
+      <div id="filter-chips" class="filter-chips"></div>
+      <select id="lang-select" title="Map language">
+        <option value="en">EN</option>
+        <option value="de">DE</option>
+        <option value="fr">FR</option>
+        <option value="es">ES</option>
+        <option value="pt">PT</option>
+        <option value="zh">中文</option>
+        <option value="ja">日本</option>
+        <option value="ar">عربي</option>
+      </select>
+      <button id="db-open-btn" class="header-btn" title="Browse project database" onclick="openDatabaseModal()">
+        <svg viewBox="0 0 20 20" fill="currentColor"><path d="M3 12v3c0 1.657 3.134 3 7 3s7-1.343 7-3v-3c0 1.657-3.134 3-7 3s-7-1.343-7-3z"/><path d="M3 7v3c0 1.657 3.134 3 7 3s7-1.343 7-3V7c0 1.657-3.134 3-7 3S3 8.657 3 7z"/><path d="M17 5c0 1.657-3.134 3-7 3S3 6.657 3 5s3.134-3 7-3 7 1.343 7 3z"/></svg>
+        <span class="header-btn-label">Database</span>
+      </button>
+      <button id="theme-toggle" title="Toggle theme" class="header-btn">
+        <svg class="icon-sun" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" clip-rule="evenodd"/></svg>
+        <svg class="icon-moon" viewBox="0 0 20 20" fill="currentColor"><path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"/></svg>
+        <span class="header-btn-label">Theme</span>
+      </button>
+      <button id="news-toggle" title="News feed" class="header-btn">
+        <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M2 5a2 2 0 012-2h8a2 2 0 012 2v10a2 2 0 002 2H4a2 2 0 01-2-2V5zm3 1h6v4H5V6zm6 6H5v2h6v-2z" clip-rule="evenodd"/><path d="M15 7h1a2 2 0 012 2v5.5a1.5 1.5 0 01-3 0V7z"/></svg>
+        <span class="header-btn-label">News</span>
+      </button>
+      <button id="help-toggle" title="Help &amp; Guide" class="header-btn">
+        <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-8-3a1 1 0 00-.867.5 1 1 0 11-1.731-1A3 3 0 0113 8a3.001 3.001 0 01-2 2.83V11a1 1 0 11-2 0v-1a1 1 0 011-1 1 1 0 100-2zm0 8a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd"/></svg>
+        <span class="header-btn-label">Help</span>
+      </button>
+      <button id="logout-btn" title="Log out" class="header-btn logout-btn" onclick="openFeedbackModal()">
+        <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M3 3a1 1 0 00-1 1v12a1 1 0 102 0V4a1 1 0 00-1-1zm10.293 9.293a1 1 0 001.414 1.414l3-3a1 1 0 000-1.414l-3-3a1 1 0 10-1.414 1.414L14.586 9H7a1 1 0 100 2h7.586l-1.293 1.293z" clip-rule="evenodd"/></svg>
+        <span class="header-btn-label">Log Out</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- MAIN -->
+  <main id="app-main">
+    <!-- LAYER PANEL -->
+    <aside id="layer-panel" class="layer-panel">
+      <div class="layer-panel-header">
+        <span class="layer-panel-icon">⚡</span>
+        <span class="layer-panel-title">LAYERS</span>
+        <button id="layer-panel-close" class="layer-panel-close" title="Collapse">&lsaquo;</button>
+      </div>
+      <div id="layer-toggles" class="layer-toggles"></div>
+      <div class="layer-actions">
+        <button id="btn-all-on" class="layer-action-btn">All On</button>
+        <button id="btn-all-off" class="layer-action-btn">All Off</button>
+      </div>
+      <div class="layer-panel-footer">
+        <div class="pipeline-toggle-section">
+          <div class="pipeline-toggle-header">📋 Project Pipeline</div>
+          <div class="pipeline-toggle-sub">Proposed projects seeking grid interconnection</div>
+          <button id="btn-pipeline" class="layer-action-btn full-width pipeline-btn" title="Toggle regulatory pipeline layer">Show Pipeline</button>
+          <div id="pipeline-legend" class="pipeline-legend hidden">
+
+            <!-- Filter chips: Technology type — TOP so immediately visible -->
+            <div class="pipeline-filter-label">Filter by Type</div>
+            <div class="pipeline-filter-chips" id="pipeline-type-chips">
+              <button class="pf-chip active" data-filter="type" data-value="wind"   style="--chip-color:#4ade80">&#128168; Wind</button>
+              <button class="pf-chip active" data-filter="type" data-value="solar"  style="--chip-color:#fbbf24">&#9728;&#65039; Solar</button>
+              <button class="pf-chip active" data-filter="type" data-value="storage" style="--chip-color:#fb7185">&#128267; Storage</button>
+              <button class="pf-chip active" data-filter="type" data-value="gas"    style="--chip-color:#94a3b8">&#128293; Gas</button>
+              <button class="pf-chip active" data-filter="type" data-value="hydro"  style="--chip-color:#38bdf8">&#128167; Hydro</button>
+              <button class="pf-chip active" data-filter="type" data-value="other"  style="--chip-color:#a78bfa">&#9889; Other</button>
+            </div>
+
+            <!-- Filter chips: Approval stage -->
+            <div class="pipeline-filter-label" style="margin-top:6px">Filter by Stage</div>
+            <div class="pipeline-filter-chips" id="pipeline-status-chips">
+              <button class="pf-chip active" data-filter="status" data-value="Applied"            style="--chip-color:#94a3b8">Applied</button>
+              <button class="pf-chip active" data-filter="status" data-value="Under Study"        style="--chip-color:#fbbf24">Under Study</button>
+              <button class="pf-chip active" data-filter="status" data-value="Agreement Signed"   style="--chip-color:#34d399">Agreement</button>
+              <button class="pf-chip active" data-filter="status" data-value="Permitted"          style="--chip-color:#4ade80">Permitted</button>
+              <button class="pf-chip active" data-filter="status" data-value="Under Construction" style="--chip-color:#38bdf8">Under Const.</button>
+            </div>
+
+            <!-- Legend: color key below filters -->
+            <div class="pipeline-legend-title" style="margin-top:10px">Approval Stage (ring color)</div>
+            <div class="pipeline-legend-item"><span class="pipeline-legend-dot" style="border-color:#94a3b8"></span>Applied</div>
+            <div class="pipeline-legend-item"><span class="pipeline-legend-dot" style="border-color:#fbbf24"></span>Under Study</div>
+            <div class="pipeline-legend-item"><span class="pipeline-legend-dot" style="border-color:#34d399"></span>Agreement Signed</div>
+            <div class="pipeline-legend-item"><span class="pipeline-legend-dot" style="border-color:#4ade80"></span>Permitted</div>
+            <div class="pipeline-legend-item"><span class="pipeline-legend-dot" style="border-color:#38bdf8"></span>Under Construction</div>
+            <div class="pipeline-legend-title" style="margin-top:6px">Energy Type (dot color &mdash; same as layers)</div>
+          </div>
+        </div>
+        <button id="btn-heatmap" class="layer-action-btn full-width" title="Toggle wind heatmap">🔥 Heatmap</button>
+        <button id="btn-connections" class="layer-action-btn full-width" title="Toggle data center connections">🔗 DC Links</button>
+      </div>
+    </aside>
+    <button id="layer-panel-expand" class="layer-panel-expand" title="Expand layers">⚡</button>
+    <button id="mobile-layers-btn" title="Toggle layers">⚡ Layers</button>
+
+    <!-- MAP -->
+    <div id="map"></div>
+
+    <!-- CEA v0.3 Upgrade 5 — You-are-here indicator (always-visible region badge) -->
+    <div id="map-where-badge" class="map-where-badge" aria-live="polite">
+      <span class="map-where-icon">📍</span>
+      <span class="map-where-text" id="map-where-text">Loading…</span>
+    </div>
+
+    <!-- ZOOM CONTROLS -->
+    <div id="map-zoom-controls" class="map-zoom-controls">
+      <button id="btn-zoom-in" class="map-zoom-btn" title="Zoom in" aria-label="Zoom in" onclick="CEA.map && CEA.map.zoomIn()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="20" height="20"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      </button>
+      <div class="map-zoom-divider"></div>
+      <button id="btn-zoom-out" class="map-zoom-btn" title="Zoom out" aria-label="Zoom out" onclick="CEA.map && CEA.map.zoomOut()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="20" height="20"><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      </button>
+    </div>
+    <!-- Welcome prompt -->
+    <div id="welcome-prompt" style="position:absolute;bottom:80px;left:50%;transform:translateX(-50%);background:rgba(6,13,26,0.92);border:1px solid rgba(14,165,233,0.4);border-radius:12px;padding:12px 22px;color:#a8d4f0;font-size:13px;font-family:inherit;pointer-events:none;z-index:50;white-space:nowrap;backdrop-filter:blur(8px);box-shadow:0 4px 20px rgba(0,0,0,0.5);transition:opacity 0.5s;">
+      ⚡ Welcome to Clean Energy Atlas &nbsp;·&nbsp; Built with Perplexity AI &nbsp;·&nbsp; Questions? jimandkimo@ikeatlas.com
+    </div>
+    <script>
+      setTimeout(function() {
+        var p = document.getElementById('welcome-prompt');
+        if (p) { p.style.opacity = '0'; setTimeout(function(){ p.style.display='none'; }, 500); }
+      }, 6000);
+    </script>
+
+    <!-- DETAIL PANEL -->
+    <aside id="detail-panel" class="detail-panel">
+      <div class="detail-panel-header">
+        <div class="detail-type-badge" id="detail-type-badge"></div>
+        <button id="detail-close" class="detail-close">&times;</button>
+      </div>
+      <div id="detail-content" class="detail-content"></div>
+      <div class="detail-actions" id="detail-actions"></div>
+    </aside>
+
+    <!-- NEWS PANEL -->
+    <aside id="news-panel" class="news-panel">
+      <div class="news-panel-header">
+        <h3>📰 Energy News</h3>
+        <button id="news-close" class="detail-close">&times;</button>
+      </div>
+      <div class="news-filters" id="news-filters"></div>
+      <div id="news-list" class="news-list"></div>
+    </aside>
+  </main>
+
+  <!-- CEA v0.3 Upgrade 6 — Always-visible bottom legend row.
+       Chip-style buttons show energy type symbol + short label.
+       Sets up optional click-to-filter behavior in v0.2. -->
+  <div id="map-bottom-legend" class="map-bottom-legend" aria-label="Energy type legend">
+    <div class="mbl-track">
+      <button class="mbl-chip" type="button" data-type="wind"       title="Wind farms"        style="--chip-color:#4ade80"><span class="mbl-dot"></span><span class="mbl-icon">💨</span><span class="mbl-lbl">Wind</span></button>
+      <button class="mbl-chip" type="button" data-type="solar"      title="Solar farms"       style="--chip-color:#fbbf24"><span class="mbl-dot"></span><span class="mbl-icon">☀️</span><span class="mbl-lbl">Solar</span></button>
+      <button class="mbl-chip" type="button" data-type="hydro"      title="Hydroelectric"     style="--chip-color:#38bdf8"><span class="mbl-dot"></span><span class="mbl-icon">💧</span><span class="mbl-lbl">Hydro</span></button>
+      <button class="mbl-chip" type="button" data-type="geothermal" title="Geothermal"         style="--chip-color:#f97316"><span class="mbl-dot"></span><span class="mbl-icon">🌋</span><span class="mbl-lbl">Geo</span></button>
+      <button class="mbl-chip" type="button" data-type="nuclear"    title="Nuclear"           style="--chip-color:#a78bfa"><span class="mbl-dot"></span><span class="mbl-icon">⚛️</span><span class="mbl-lbl">Nuclear</span></button>
+      <button class="mbl-chip" type="button" data-type="hydrogen"   title="Green hydrogen"    style="--chip-color:#34d399"><span class="mbl-dot"></span><span class="mbl-icon">🔵</span><span class="mbl-lbl">H₂</span></button>
+      <button class="mbl-chip" type="button" data-type="storage"    title="Battery storage"   style="--chip-color:#fb7185"><span class="mbl-dot"></span><span class="mbl-icon">🔋</span><span class="mbl-lbl">Storage</span></button>
+      <button class="mbl-chip" type="button" data-type="datacenter" title="Data centers"      style="--chip-color:#94a3b8"><span class="mbl-dot"></span><span class="mbl-icon">🖥️</span><span class="mbl-lbl">DC</span></button>
+    </div>
+  </div>
+
+  <!-- STATS BAR -->
+  <footer id="stats-bar">
+    <div class="stat-item">
+      <span class="stat-label">Projects</span>
+      <span class="stat-value" id="stat-projects">0</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-label">Capacity</span>
+      <span class="stat-value" id="stat-capacity">0 GW</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-label">Countries</span>
+      <span class="stat-value" id="stat-countries">0</span>
+    </div>
+    <div class="stat-item dc-stat">
+      <span class="stat-label">Data Centers</span>
+      <span class="stat-value" id="stat-datacenters">0</span>
+    </div>
+    <div class="stat-item dc-stat">
+      <span class="stat-label">DC Demand</span>
+      <span class="stat-value" id="stat-dc-demand">0 GW</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-label">Clean / Demand</span>
+      <span class="stat-value" id="stat-ratio">—</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-label">Grid</span>
+      <span class="stat-value" id="stat-grid">307 lines | 205 sub</span>
+    </div>
+    <div class="stat-item pipeline-stat hidden" id="pipeline-stat-block">
+      <span class="stat-label">In Queue</span>
+      <span class="stat-value" id="stat-pipeline">—</span>
+    </div>
+    <div class="stat-item pipeline-stat hidden" id="pipeline-cap-block">
+      <span class="stat-label">Queue GW</span>
+      <span class="stat-value" id="stat-pipeline-cap">—</span>
+    </div>
+  </footer>
+
+  <!-- COMPARE MODAL -->
+  <div id="compare-modal" class="modal hidden">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Compare Projects</h3>
+        <button class="detail-close" onclick="document.getElementById('compare-modal').classList.add('hidden')">&times;</button>
+      </div>
+      <div id="compare-body" class="compare-body"></div>
+    </div>
+  </div>
+
+  <!-- SHARE MODAL -->
+  <div id="share-modal" class="modal hidden">
+    <div class="modal-content modal-sm">
+      <div class="modal-header">
+        <h3>Share Project</h3>
+        <button class="detail-close" onclick="document.getElementById('share-modal').classList.add('hidden')">&times;</button>
+      </div>
+      <div id="share-body" class="share-body">
+        <input type="text" id="share-url" readonly class="share-url-input">
+        <button id="share-copy-btn" class="btn-primary">Copy Link</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- HELP PANEL -->
+  <aside id="help-panel" class="help-panel hidden">
+    <div class="help-panel-header">
+      <div class="help-panel-title">
+        <svg viewBox="0 0 20 20" fill="currentColor" width="18" height="18"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-8-3a1 1 0 00-.867.5 1 1 0 11-1.731-1A3 3 0 0113 8a3.001 3.001 0 01-2 2.83V11a1 1 0 11-2 0v-1a1 1 0 011-1 1 1 0 100-2zm0 8a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd"/></svg>
+        Help &amp; Guide
+      </div>
+      <button id="help-close" class="detail-close">&times;</button>
+    </div>
+    <div class="help-panel-body">
+
+      <div class="help-section">
+        <div class="help-section-title">🌍 Getting Started</div>
+        <p class="help-text">Clean Energy Atlas is an interactive global map of clean energy infrastructure. Use the <strong>Layers panel</strong> on the left to toggle energy types, the transmission grid, and the project pipeline.</p>
+      </div>
+
+      <div class="help-section">
+        <div class="help-section-title">⚡ Energy Layers</div>
+        <div class="help-layer-list">
+          <div class="help-layer-item"><span class="help-dot" style="background:#4ade80"></span><strong>Wind</strong> — 507 farms · onshore, offshore &amp; floating</div>
+          <div class="help-layer-item"><span class="help-dot" style="background:#fbbf24"></span><strong>Solar</strong> — 514 utility-scale projects</div>
+          <div class="help-layer-item"><span class="help-dot" style="background:#38bdf8"></span><strong>Hydro</strong> — 200 hydroelectric plants</div>
+          <div class="help-layer-item"><span class="help-dot" style="background:#f97316"></span><strong>Geothermal</strong> — 150 plants</div>
+          <div class="help-layer-item"><span class="help-dot" style="background:#a78bfa"></span><strong>Nuclear</strong> — 150 reactors</div>
+          <div class="help-layer-item"><span class="help-dot" style="background:#34d399"></span><strong>Hydrogen</strong> — 100 green hydrogen projects</div>
+          <div class="help-layer-item"><span class="help-dot" style="background:#fb7185"></span><strong>Storage</strong> — 150 battery/BESS projects</div>
+          <div class="help-layer-item"><span class="help-dot" style="background:#94a3b8"></span><strong>Data Centers</strong> — 320 hyperscale facilities</div>
+        </div>
+        <div class="help-tip" style="margin-top:8px"><span class="help-tip-key">Offshore Wind</span> Sky-blue ring halo on offshore &amp; floating markers</div>
+      </div>
+
+      <div class="help-section">
+        <div class="help-section-title">🔌 Transmission Grid</div>
+        <p class="help-text">Shown by default. Includes <strong>307 major transmission lines</strong> color-coded by voltage level, and <strong>205 substations</strong>.</p>
+        <div class="help-voltage-list">
+          <div class="help-layer-item"><span class="help-dot" style="background:#ef4444"></span>Ultra High Voltage (500kV+)</div>
+          <div class="help-layer-item"><span class="help-dot" style="background:#f97316"></span>Extra High Voltage (345–499kV)</div>
+          <div class="help-layer-item"><span class="help-dot" style="background:#fbbf24"></span>High Voltage (230–344kV)</div>
+          <div class="help-layer-item"><span class="help-dot" style="background:#4ade80"></span>Medium Voltage (&lt;230kV)</div>
+        </div>
+      </div>
+
+      <div class="help-section">
+        <div class="help-section-title">📋 Project Pipeline</div>
+        <p class="help-text">Shows <strong>461 proposed projects (305 GW)</strong> seeking grid interconnection approvals across the US, UK, Australia, Canada, Germany, India, China, and more. Covers CAISO, ERCOT, SPP, and ISONE queues. Data refreshes monthly.</p>
+        <p class="help-text" style="margin-top:6px">Ring color = approval stage &nbsp;·&nbsp; Dot color = energy type</p>
+        <div class="help-tip"><span class="help-tip-key">Toggle</span> Use the Pipeline button in the Layers panel to show/hide</div>
+        <div class="help-tip"><span class="help-tip-key">Click marker</span> Opens full detail panel — capacity, developer, ISO, queue status, est. online date &amp; Related News</div>
+        <div class="help-tip"><span class="help-tip-key">Filter chips</span> Filter by type (Wind, Solar, Storage, Gas, Hydro) and by approval stage</div>
+        <div class="help-tip"><span class="help-tip-key">Download</span> Export any project as CSV, JSON, TXT report, or PDF from the detail panel</div>
+      </div>
+
+      <div class="help-section">
+        <div class="help-section-title">🖱️ Interacting with the Map</div>
+        <div class="help-tip"><span class="help-tip-key">Click marker</span> Open full project details</div>
+        <div class="help-tip"><span class="help-tip-key">Click country</span> Country summary card</div>
+        <div class="help-tip"><span class="help-tip-key">Scroll</span> Zoom in / out</div>
+        <div class="help-tip"><span class="help-tip-key">Drag</span> Pan the map</div>
+        <div class="help-tip"><span class="help-tip-key">Search bar</span> Find projects, countries, operators</div>
+      </div>
+
+      <div class="help-section">
+        <div class="help-section-title">📥 Downloading Data</div>
+        <p class="help-text">Click any project marker to open the detail panel. Download the project data in 4 formats:</p>
+        <div class="help-tip"><span class="help-tip-key">CSV</span> Spreadsheet-ready data export</div>
+        <div class="help-tip"><span class="help-tip-key">JSON</span> Structured data with pretty viewer</div>
+        <div class="help-tip"><span class="help-tip-key">TXT</span> Plain-text project report</div>
+        <div class="help-tip"><span class="help-tip-key">PDF</span> Printable branded project report</div>
+        <div class="help-tip" style="margin-top:4px"><span class="help-tip-key">Compare</span> Side-by-side comparison of up to 3 projects</div>
+      </div>
+
+      <div class="help-section">
+        <div class="help-section-title">📊 Search &amp; Database</div>
+        <div class="help-tip"><span class="help-tip-key">Search bar</span> Searches all fields — name, country, operator, type, status</div>
+        <div class="help-tip"><span class="help-tip-key">Database</span> Full 500-row browsable table with type &amp; status filters</div>
+        <div class="help-tip"><span class="help-tip-key">Click result</span> Flies map to that project and opens detail panel</div>
+      </div>
+
+      <div class="help-section">
+        <div class="help-section-title">🔧 Other Features</div>
+        <div class="help-tip"><span class="help-tip-key">🔥 Heatmap</span> Wind density heat overlay</div>
+        <div class="help-tip"><span class="help-tip-key">🔗 DC Links</span> Transmission line connections</div>
+        <div class="help-tip"><span class="help-tip-key">📰 News</span> 56 curated headlines — click any to open the full article in a new tab</div>
+        <div class="help-tip"><span class="help-tip-key">Save PDF</span> Save any news article summary as a branded PDF</div>
+        <div class="help-tip"><span class="help-tip-key">Copy</span> Copy article details (title, source, date, URL) to clipboard</div>
+        <div class="help-tip"><span class="help-tip-key">🌙 / ☀️</span> Toggle dark / light mode</div>
+        <div class="help-tip"><span class="help-tip-key">Language</span> Switch map labels to 8 languages</div>
+        <div class="help-tip"><span class="help-tip-key">Compare</span> Side-by-side comparison of up to 3 projects</div>
+      </div>
+
+      <div class="help-download">
+        <a href="/CEA_QuickGuide_April2026.pdf" download class="help-download-btn">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Download User Guide (PDF)
+        </a>
+        <div class="help-download-meta">April 2026 · Quick Reference</div>
+      </div>
+
+      <div class="help-footer">
+        <div class="help-footer-brand">⚡ Clean Energy Atlas</div>
+        <div class="help-footer-sub">cleanenergyatlas.com &nbsp;·&nbsp; Data updated monthly</div>
+        <div class="help-footer-sub" style="margin-top:6px;">Questions or partnerships? &nbsp;<a href="mailto:jimandkimo@ikeatlas.com" style="color:#38bdf8;text-decoration:none;">jimandkimo@ikeatlas.com</a></div>
+        <div class="help-footer-sub" style="margin-top:2px;">Built with Perplexity AI &nbsp;·&nbsp; <a href="https://ikeatlas.com" target="_blank" style="color:#38bdf8;text-decoration:none;">ikeatlas.com</a></div>
+      </div>
+
+    </div>
+  </aside>
+
+<!-- JSON VIEWER MODAL -->
+<div id="json-viewer-modal" class="jv-modal" style="display:none">
+  <div class="jv-modal-inner">
+    <div class="jv-modal-header">
+      <div class="jv-modal-title">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+        <span id="jv-title">Project Data</span>
+      </div>
+      <div class="jv-modal-actions">
+        <button class="jv-copy-btn" id="jv-copy-btn" onclick="copyJSONToClipboard()">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+          Copy JSON
+        </button>
+        <button class="jv-dl-btn" id="jv-dl-btn" onclick="downloadJSONFromViewer()">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Download .json
+        </button>
+        <button class="jv-close-btn" id="jv-close-btn" aria-label="Close">&times;</button>
+      </div>
+    </div>
+    <div class="jv-type-badge-row" id="jv-badge-row"></div>
+    <div class="jv-body">
+      <table class="jv-table" id="jv-table">
+        <tbody id="jv-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- DATABASE MODAL -->
+<div id="database-modal" class="db-modal">
+  <div class="db-modal-inner">
+    <div class="db-modal-header">
+      <h2 class="db-modal-title">Project Database</h2>
+      <div class="db-modal-controls">
+        <select id="db-filter-type" class="db-filter-select">
+          <option value="">All Types</option>
+          <option value="wind">Wind</option>
+          <option value="solar">Solar</option>
+          <option value="hydro">Hydro</option>
+          <option value="geothermal">Geothermal</option>
+          <option value="nuclear">Nuclear</option>
+          <option value="hydrogen">Hydrogen</option>
+          <option value="storage">Storage</option>
+          <option value="datacenter">Data Centers</option>
+        </select>
+        <select id="db-filter-status" class="db-filter-select">
+          <option value="">All Status</option>
+          <option value="Operational">Operational</option>
+          <option value="Under Construction">Under Construction</option>
+          <option value="Planned">Planned</option>
+          <option value="Decommissioned">Decommissioned</option>
+        </select>
+        <input type="text" id="db-search" class="db-search-input" placeholder="Filter by name, country, owner...">
+        <span id="db-count" class="db-count"></span>
+      </div>
+      <button id="db-close" class="db-close-btn">&times;</button>
+    </div>
+    <div class="db-table-wrap">
+      <table class="db-table" id="db-table">
+        <thead>
+          <tr>
+            <th>Type</th>
+            <th>Name</th>
+            <th>Country</th>
+            <th>Capacity</th>
+            <th>Status</th>
+            <th>Owner</th>
+            <th>Year</th>
+          </tr>
+        </thead>
+        <tbody id="db-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+  <!-- SCRIPTS -->
+  <script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
+  <script src="data/pipeline.js"></script>
+  <script src="data/wind.js"></script>
+  <script src="data/solar.js"></script>
+  <script src="data/hydro.js"></script>
+  <script src="data/geothermal.js"></script>
+  <script src="data/nuclear.js"></script>
+  <script src="data/hydrogen.js"></script>
+  <script src="data/storage.js"></script>
+  <script src="data/datacenters.js"></script>
+  <script src="data/grid.js"></script>
+  <script src="news.js"></script>
+  <script src="map.js"></script>
+  <script src="panel.js"></script>
+  <script src="ui.js"></script>
+  <script src="tour.js"></script>
+  <script src="feedback.js"></script>
+</body>
+</html>
