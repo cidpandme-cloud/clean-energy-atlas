@@ -121,12 +121,14 @@ function buildMapStyle(lang) {
         'source-layer': 'landuse',
         paint: { 'fill-color': '#0e1c30', 'fill-opacity': 0.3 }
       },
+      // CEA v0.3.3 — the OpenFreeMap planet tileset has no 'landmass' source-layer.
+      // Land is implicit: background-color = land, then 'water' fill draws ocean on top.
+      // Layer kept (id 'land') as a safe no-op so existing code that calls setLayer('land', …)
+      // still has a target without crashing the style.
       {
         id: 'land',
-        type: 'fill',
-        source: 'openfree',
-        'source-layer': 'landmass',
-        paint: { 'fill-color': '#0e1c30', 'fill-opacity': 1.0 }
+        type: 'background',
+        paint: { 'background-color': '#0e1c30', 'background-opacity': 0 }
       },
       {
         id: 'boundary',
@@ -226,18 +228,23 @@ function buildLightStyle(lang) {
   }
 
   // CEA v0.3.3 — stronger land/ocean contrast.
-  // Ocean = deep slate-blue, Land = warm cream/parchment. Coastlines now read clearly.
+  // KEY INSIGHT: the planet tileset has no 'landmass' layer. Land is whatever the
+  // background shows through. So:
+  //   background-color  = LAND  (cream shows wherever water doesn't draw)
+  //   water fill-color  = OCEAN (saturated blue draws on top of cream background)
   var OCEAN = '#5b8db8';   // deeper, more saturated blue
-  var LAND  = '#f4ecd8';   // warm cream (vs. previous near-white)
+  var LAND  = '#f4ecd8';   // warm cream/parchment
   var LAND_2 = '#ede2c4';  // slightly darker landuse for variation
 
-  // Background / water
-  setLayer('background', 'background-color', OCEAN);
+  // Background = land (everything not water)
+  setLayer('background', 'background-color', LAND);
+  // Water draws OCEAN on top of background
   setLayer('water', 'fill-color', OCEAN);
-  // Land
-  setLayer('landcover', 'fill-color', LAND);
+  // Landcover/landuse modulate cream slightly where present
+  setLayer('landcover', 'fill-color', LAND_2);
+  setLayer('landcover', 'fill-opacity', 0.4);
   setLayer('landuse', 'fill-color', LAND_2);
-  setLayer('land', 'fill-color', LAND);
+  setLayer('landuse', 'fill-opacity', 0.5);
   // Country borders — stronger so country shapes pop
   setLayer('boundary', 'line-color', '#3a5070');
   setLayer('boundary', 'line-width', 1.4);
@@ -252,7 +259,8 @@ function buildLightStyle(lang) {
   setLayer('city-labels', 'text-color', '#2a3850');
   setLayer('city-labels', 'text-halo-color', LAND);
 
-  // Safety net: override any unknown fill / background layers to prevent dark bleed-through
+  // Safety net: keep land-tone for any unexpected fill, but DO NOT touch other backgrounds
+  // (the previous behavior of forcing background to OCEAN was masking the bug).
   var knownIds = { background:1, water:1, landcover:1, landuse:1, land:1 };
   for (var i = 0; i < style.layers.length; i++) {
     var l = style.layers[i];
@@ -260,9 +268,6 @@ function buildLightStyle(lang) {
     if (!l.paint) continue;
     if (l.type === 'fill' && l.paint['fill-color']) {
       l.paint['fill-color'] = LAND_2;
-    }
-    if (l.type === 'background' && l.paint['background-color']) {
-      l.paint['background-color'] = OCEAN;
     }
   }
   return style;
@@ -1102,10 +1107,10 @@ function switchTheme(isDark) {
       CEA.map.setPaintProperty('city-labels', 'text-halo-color', '#060d1a');
     }
   } else {
-    // CEA v0.3.3 — high-contrast light theme: deep blue ocean + cream land
-    CEA.map.setPaintProperty('background', 'background-color', '#5b8db8');
+    // CEA v0.3.3 — high-contrast light theme: cream land background + saturated blue water on top
+    CEA.map.setPaintProperty('background', 'background-color', '#f4ecd8');
     CEA.map.setPaintProperty('water', 'fill-color', '#5b8db8');
-    if (CEA.map.getLayer('landcover')) CEA.map.setPaintProperty('landcover', 'fill-color', '#f4ecd8');
+    if (CEA.map.getLayer('landcover')) CEA.map.setPaintProperty('landcover', 'fill-color', '#ede2c4');
     if (CEA.map.getLayer('landuse')) CEA.map.setPaintProperty('landuse', 'fill-color', '#ede2c4');
     CEA.map.setPaintProperty('boundary', 'line-color', '#3a5070');
     CEA.map.setPaintProperty('boundary', 'line-width', 1.4);
