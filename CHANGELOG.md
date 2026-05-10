@@ -30,3 +30,8 @@
 - **Land orientation when zoomed in** — state labels now appear at z3 (was z4), city labels show all ranks at high zoom, new town/village labels at z7+. Country labels persist all the way to z10+.
 - **Border contrast** — left rail, header, button outlines now visible (border opacity 0.08→0.16 dark, 0.10→0.22 light; active 0.18→0.32 / 0.20→0.42).
 - **Dark mode label brightness** — country/state/city labels brighter (#cfdcf0 / #a8bfdb / #94afd0) with darker halos.
+
+## v0.3.6 — 2026-05-09 (PDF + News links)
+- **User Guide PDF** is now a real, branded one-page PDF (CEA_QuickGuide_April2026.pdf, ~20 KB). Built with PDFKit + DM Sans embedded, painted in the same teal/burnt-orange palette as the app. Help button serves it correctly instead of the SPA fallback HTML.
+- **Newsroom Read More** every article URL now points to a Google search for the headline + country instead of a hardcoded publisher URL. Eliminates the "Page not found" landings — every link resolves to a live page.
+- **Build pipeline** added: `node build_user_guide.js` regenerates the PDF from `build_user_guide.js`. Fonts in `fonts/`, excluded from deploy via `.vercelignore`.
