@@ -225,26 +225,32 @@ function buildLightStyle(lang) {
     }
   }
 
+  // CEA v0.3.3 — stronger land/ocean contrast.
+  // Ocean = deep slate-blue, Land = warm cream/parchment. Coastlines now read clearly.
+  var OCEAN = '#5b8db8';   // deeper, more saturated blue
+  var LAND  = '#f4ecd8';   // warm cream (vs. previous near-white)
+  var LAND_2 = '#ede2c4';  // slightly darker landuse for variation
+
   // Background / water
-  setLayer('background', 'background-color', '#b8d4e8');
-  setLayer('water', 'fill-color', '#a0c4e0');
+  setLayer('background', 'background-color', OCEAN);
+  setLayer('water', 'fill-color', OCEAN);
   // Land
-  setLayer('landcover', 'fill-color', '#eef0eb');
-  setLayer('landuse', 'fill-color', '#e4e8de');
-  setLayer('land', 'fill-color', '#e4e8de');
-  // Country borders
-  setLayer('boundary', 'line-color', '#8aa8c0');
-  setLayer('boundary', 'line-width', 1.2);
-  // CEA v0.3 Upgrade 5 — state borders + state labels in light mode
-  setLayer('boundary-state', 'line-color', '#9ab0c4');
-  setLayer('boundary-state', 'line-opacity', 0.7);
-  setLayer('state-labels', 'text-color', '#3a5878');
-  setLayer('state-labels', 'text-halo-color', '#eef0eb');
+  setLayer('landcover', 'fill-color', LAND);
+  setLayer('landuse', 'fill-color', LAND_2);
+  setLayer('land', 'fill-color', LAND);
+  // Country borders — stronger so country shapes pop
+  setLayer('boundary', 'line-color', '#3a5070');
+  setLayer('boundary', 'line-width', 1.4);
+  // State borders + labels (light mode)
+  setLayer('boundary-state', 'line-color', '#7c8fa8');
+  setLayer('boundary-state', 'line-opacity', 0.75);
+  setLayer('state-labels', 'text-color', '#2a3850');
+  setLayer('state-labels', 'text-halo-color', LAND);
   // Country and city labels
-  setLayer('country-labels', 'text-color', '#2a4860');
-  setLayer('country-labels', 'text-halo-color', '#eef0eb');
-  setLayer('city-labels', 'text-color', '#3a5878');
-  setLayer('city-labels', 'text-halo-color', '#eef0eb');
+  setLayer('country-labels', 'text-color', '#1a2840');
+  setLayer('country-labels', 'text-halo-color', LAND);
+  setLayer('city-labels', 'text-color', '#2a3850');
+  setLayer('city-labels', 'text-halo-color', LAND);
 
   // Safety net: override any unknown fill / background layers to prevent dark bleed-through
   var knownIds = { background:1, water:1, landcover:1, landuse:1, land:1 };
@@ -253,10 +259,10 @@ function buildLightStyle(lang) {
     if (knownIds[l.id]) continue;
     if (!l.paint) continue;
     if (l.type === 'fill' && l.paint['fill-color']) {
-      l.paint['fill-color'] = '#e4e8de';
+      l.paint['fill-color'] = LAND_2;
     }
     if (l.type === 'background' && l.paint['background-color']) {
-      l.paint['background-color'] = '#b8d4e8';
+      l.paint['background-color'] = OCEAN;
     }
   }
   return style;
@@ -476,8 +482,8 @@ function initMap() {
   CEA.map = new maplibregl.Map({
     container: 'map',
     style: style,
-    center: [-96, 39],   // Lower 48 center (was [15, 20] world)
-    zoom: 3.6,           // Continental US wide view (was 2.0)
+    center: [10, 25],    // CEA v0.3.3 — whole-world default per Jim's feedback
+    zoom: 1.6,           // Whole world fits in viewport (was 3.6 US-only)
     pitch: 0,
     antialias: false,
     fadeDuration: 0,
@@ -1096,17 +1102,18 @@ function switchTheme(isDark) {
       CEA.map.setPaintProperty('city-labels', 'text-halo-color', '#060d1a');
     }
   } else {
-    CEA.map.setPaintProperty('background', 'background-color', '#c8ddf0');
-    CEA.map.setPaintProperty('water', 'fill-color', '#a8c8e8');
-    if (CEA.map.getLayer('landcover')) CEA.map.setPaintProperty('landcover', 'fill-color', '#e8ede5');
-    if (CEA.map.getLayer('landuse')) CEA.map.setPaintProperty('landuse', 'fill-color', '#dde8da');
-    CEA.map.setPaintProperty('boundary', 'line-color', '#6a8fb0');
-    CEA.map.setPaintProperty('boundary', 'line-width', 1.2);
-    CEA.map.setPaintProperty('country-labels', 'text-color', '#3a5878');
-    CEA.map.setPaintProperty('country-labels', 'text-halo-color', '#c8ddf0');
+    // CEA v0.3.3 — high-contrast light theme: deep blue ocean + cream land
+    CEA.map.setPaintProperty('background', 'background-color', '#5b8db8');
+    CEA.map.setPaintProperty('water', 'fill-color', '#5b8db8');
+    if (CEA.map.getLayer('landcover')) CEA.map.setPaintProperty('landcover', 'fill-color', '#f4ecd8');
+    if (CEA.map.getLayer('landuse')) CEA.map.setPaintProperty('landuse', 'fill-color', '#ede2c4');
+    CEA.map.setPaintProperty('boundary', 'line-color', '#3a5070');
+    CEA.map.setPaintProperty('boundary', 'line-width', 1.4);
+    CEA.map.setPaintProperty('country-labels', 'text-color', '#1a2840');
+    CEA.map.setPaintProperty('country-labels', 'text-halo-color', '#f4ecd8');
     if (CEA.map.getLayer('city-labels')) {
-      CEA.map.setPaintProperty('city-labels', 'text-color', '#4a6888');
-      CEA.map.setPaintProperty('city-labels', 'text-halo-color', '#c8ddf0');
+      CEA.map.setPaintProperty('city-labels', 'text-color', '#2a3850');
+      CEA.map.setPaintProperty('city-labels', 'text-halo-color', '#f4ecd8');
     }
   }
 }
