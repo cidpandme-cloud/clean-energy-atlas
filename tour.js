@@ -222,13 +222,11 @@
   }
 
   // Init
+  // CEA v0.3 — Upgrade 3: never auto-launch the tour. Only show the persistent
+  // "Tour" button (bottom-right). Users can replay anytime; first-time visitors
+  // are no longer interrupted by a popup.
   function init() {
     showReplayButton();
-    const seen = localStorage.getItem(TOUR_KEY);
-    if (!seen) {
-      // Small delay so map finishes loading
-      setTimeout(startTour, 2200);
-    }
   }
 
   if (document.readyState === 'loading') {

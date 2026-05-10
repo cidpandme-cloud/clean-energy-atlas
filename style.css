@@ -291,18 +291,20 @@ body {
   flex-wrap: nowrap;
 }
 .mbl-chip {
+  /* CEA v0.3.1 — compact icon-only chips so they don't read as duplicates of the left LAYERS rail.
+     Hover or long-press shows the energy-type name via the title attribute. */
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 4px 10px 4px 8px;
-  height: 28px;
+  justify-content: center;
+  gap: 0;
+  padding: 0;
+  width: 30px;
+  height: 26px;
   background: var(--bg-tertiary);
-  border: 1.5px solid var(--border-active);
+  border: 1px solid var(--border);
   border-radius: 999px;
   color: var(--text-primary);
   font-family: var(--font-body);
-  font-size: 11.5px;
-  font-weight: 600;
   cursor: pointer;
   transition: all 0.12s;
   white-space: nowrap;
@@ -316,22 +318,26 @@ body {
 }
 .mbl-chip:active { transform: translateY(0); }
 .mbl-dot {
-  width: 10px; height: 10px;
-  border-radius: 50%;
-  background: var(--chip-color);
-  flex-shrink: 0;
-  box-shadow: 0 0 0 2px rgba(255,255,255,0.15);
+  /* in icon-only mode the dot is the chip's color ring */
+  display: none;
 }
-.theme-light .mbl-dot { box-shadow: 0 0 0 2px rgba(0,0,0,0.06); }
-.mbl-icon { font-size: 13px; line-height: 1; }
-.mbl-lbl { letter-spacing: 0.02em; }
-.mbl-chip.dimmed { opacity: 0.45; }
-.mbl-chip.dimmed:hover { opacity: 1; }
+.mbl-icon { font-size: 14px; line-height: 1; }
+.mbl-lbl { display: none; }   /* hide text labels — distinguish from left rail */
+.mbl-chip.active { background: var(--chip-color); border-color: var(--chip-color); color: #fff; }
+.mbl-chip:not(.active) { opacity: 0.55; }
+.mbl-chip:not(.active):hover { opacity: 1; border-color: var(--chip-color); }
+/* legacy class kept harmless for older JS */
+.mbl-chip.dimmed { opacity: 0.55; }
 @media (max-width: 700px) {
   .map-bottom-legend { padding: 0 4px; justify-content: flex-start; }
-  .mbl-chip { padding: 3px 8px 3px 6px; height: 26px; font-size: 11px; }
-  .mbl-icon { font-size: 12px; }
+  .mbl-chip { width: 28px; height: 24px; }
+  .mbl-icon { font-size: 13px; }
 }
+
+/* CEA v0.3.1 — hide the floating "Project Pipeline" card in the lower-left of the
+   layers panel. The bottom legend strip + left rail already convey layer state;
+   that orange box was original-site clutter that conflicted with the new UI. */
+.pipeline-toggle-section { display: none !important; }
 
 /* ===== MAP ===== */
 #map {
