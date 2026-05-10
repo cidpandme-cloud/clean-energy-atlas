@@ -162,36 +162,22 @@ function buildLayerToggles() {
 }
 
 function setupBottomLegend() {
+  // CEA v0.3.2 — the bottom row is now the PROJECT STAGE legend.
+  // Chips display the regulatory pipeline stage colors. They're informational
+  // legend keys; click-to-filter behavior is queued for v0.2 per the spec.
+  // No event wiring required — hover tooltips come from the title attribute.
   var chips = document.querySelectorAll('.mbl-chip');
   for (var i = 0; i < chips.length; i++) {
-    (function(chip) {
-      var type = chip.getAttribute('data-type');
-      // Initial state: all energy layers start OFF, so all chips start dimmed
-      chip.classList.add('dimmed');
-      chip.addEventListener('click', function(e) {
-        e.preventDefault();
-        // Click the matching left-panel toggle to keep both UIs in sync
-        var panelEl = document.querySelector('.layer-toggle[data-type="' + type + '"]');
-        if (panelEl) {
-          handleLayerToggle(panelEl, type);
-          syncBottomLegendChips();
-          if (typeof updateStats === 'function') updateStats();
-        }
-      });
-    })(chips[i]);
+    var lbl = chips[i].querySelector('.mbl-lbl');
+    if (lbl && !chips[i].getAttribute('title')) {
+      chips[i].setAttribute('title', lbl.textContent.trim());
+    }
   }
 }
 
 function syncBottomLegendChips() {
-  var chips = document.querySelectorAll('.mbl-chip');
-  for (var i = 0; i < chips.length; i++) {
-    var type = chips[i].getAttribute('data-type');
-    if (CEA.layerVisibility && CEA.layerVisibility[type]) {
-      chips[i].classList.remove('dimmed');
-    } else {
-      chips[i].classList.add('dimmed');
-    }
-  }
+  // v0.3.2: project-stage chips don't sync with energy layers. Kept as a no-op
+  // so existing call sites in handleLayerToggle / All On / All Off don't crash.
 }
 
 function handleLayerToggle(el, type) {

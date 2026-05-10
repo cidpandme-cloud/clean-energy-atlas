@@ -203,19 +203,19 @@
     </aside>
   </main>
 
-  <!-- CEA v0.3 Upgrade 6 — Always-visible bottom legend row.
-       Chip-style buttons show energy type symbol + short label.
-       Sets up optional click-to-filter behavior in v0.2. -->
-  <div id="map-bottom-legend" class="map-bottom-legend" aria-label="Energy type legend">
+  <!-- CEA v0.3.2 Upgrade 6 (corrected) — Always-visible PROJECT LEGEND row.
+       Replaces the broken/hidden lower-left project-pipeline legend with a thin
+       row of clear labeled buttons along the bottom edge of the map.
+       Each chip shows the project's regulatory stage (ring color) + label.
+       NOT a duplicate of the left rail (which is energy types). -->
+  <div id="map-bottom-legend" class="map-bottom-legend" aria-label="Project pipeline stage legend">
     <div class="mbl-track">
-      <button class="mbl-chip" type="button" data-type="wind"       title="Wind farms"        style="--chip-color:#4ade80"><span class="mbl-dot"></span><span class="mbl-icon">💨</span><span class="mbl-lbl">Wind</span></button>
-      <button class="mbl-chip" type="button" data-type="solar"      title="Solar farms"       style="--chip-color:#fbbf24"><span class="mbl-dot"></span><span class="mbl-icon">☀️</span><span class="mbl-lbl">Solar</span></button>
-      <button class="mbl-chip" type="button" data-type="hydro"      title="Hydroelectric"     style="--chip-color:#38bdf8"><span class="mbl-dot"></span><span class="mbl-icon">💧</span><span class="mbl-lbl">Hydro</span></button>
-      <button class="mbl-chip" type="button" data-type="geothermal" title="Geothermal"         style="--chip-color:#f97316"><span class="mbl-dot"></span><span class="mbl-icon">🌋</span><span class="mbl-lbl">Geo</span></button>
-      <button class="mbl-chip" type="button" data-type="nuclear"    title="Nuclear"           style="--chip-color:#a78bfa"><span class="mbl-dot"></span><span class="mbl-icon">⚛️</span><span class="mbl-lbl">Nuclear</span></button>
-      <button class="mbl-chip" type="button" data-type="hydrogen"   title="Green hydrogen"    style="--chip-color:#34d399"><span class="mbl-dot"></span><span class="mbl-icon">🔵</span><span class="mbl-lbl">H₂</span></button>
-      <button class="mbl-chip" type="button" data-type="storage"    title="Battery storage"   style="--chip-color:#fb7185"><span class="mbl-dot"></span><span class="mbl-icon">🔋</span><span class="mbl-lbl">Storage</span></button>
-      <button class="mbl-chip" type="button" data-type="datacenter" title="Data centers"      style="--chip-color:#94a3b8"><span class="mbl-dot"></span><span class="mbl-icon">🖥️</span><span class="mbl-lbl">DC</span></button>
+      <span class="mbl-title">Project Stages:</span>
+      <button class="mbl-chip" type="button" data-stage="applied"       title="Applied for interconnection"        style="--chip-color:#94a3b8"><span class="mbl-ring"></span><span class="mbl-lbl">Applied</span></button>
+      <button class="mbl-chip" type="button" data-stage="under-study"   title="Under regulatory study"             style="--chip-color:#fbbf24"><span class="mbl-ring"></span><span class="mbl-lbl">Under Study</span></button>
+      <button class="mbl-chip" type="button" data-stage="agreement"     title="Interconnection agreement signed"   style="--chip-color:#34d399"><span class="mbl-ring"></span><span class="mbl-lbl">Agreement Signed</span></button>
+      <button class="mbl-chip" type="button" data-stage="permitted"     title="Permitted to build"                 style="--chip-color:#4ade80"><span class="mbl-ring"></span><span class="mbl-lbl">Permitted</span></button>
+      <button class="mbl-chip" type="button" data-stage="construction"  title="Currently under construction"       style="--chip-color:#38bdf8"><span class="mbl-ring"></span><span class="mbl-lbl">Under Construction</span></button>
     </div>
   </div>
 
