@@ -647,27 +647,38 @@ function addAllLayers() {
 }
 
 function addWindHeatmap() {
+  // CEA v0.3.4 — stronger heatmap so it's visible at world zoom (the previous radius/intensity
+  // was tuned for zoomed-in views and disappeared at z1.6–z3). Combined wind+solar+hydro for
+  // stronger density on regions where any clean energy is concentrated.
   var map = CEA.map;
-  var geojson = toGeoJSON(CEA.energyTypes.wind.data, 'wind');
+  var combined = [];
+  ['wind','solar','hydro'].forEach(function(t){
+    (CEA.energyTypes[t].data||[]).forEach(function(d){
+      if (d.lat && d.lng) combined.push(d);
+    });
+  });
+  var geojson = { type:'FeatureCollection', features: combined.map(function(d){
+    return { type:'Feature', properties:{ capacity: d.capacity || d.capacity_mw || 100 }, geometry:{ type:'Point', coordinates:[d.lng, d.lat] } };
+  })};
   map.addSource('src-wind-heat', { type: 'geojson', data: geojson });
   map.addLayer({
     id: 'layer-wind-heatmap',
     type: 'heatmap',
     source: 'src-wind-heat',
-    maxzoom: 12,
+    maxzoom: 14,
     paint: {
-      'heatmap-weight': ['interpolate', ['linear'], ['get', 'capacity'], 0, 0, 2000, 1],
-      'heatmap-intensity': ['interpolate', ['linear'], ['zoom'], 0, 0.6, 9, 2],
+      'heatmap-weight': ['interpolate', ['linear'], ['get', 'capacity'], 0, 0.3, 500, 0.8, 2000, 1.4],
+      'heatmap-intensity': ['interpolate', ['linear'], ['zoom'], 0, 1.4, 4, 2.0, 9, 3.0],
       'heatmap-color': [
         'interpolate', ['linear'], ['heatmap-density'],
-        0, 'rgba(0,0,0,0)',
-        0.2, 'rgba(74,222,128,0.2)',
-        0.4, 'rgba(74,222,128,0.4)',
-        0.6, 'rgba(251,191,36,0.6)',
-        0.8, 'rgba(249,115,22,0.8)',
-        1, 'rgba(239,68,68,1)'
+        0,    'rgba(74,222,128,0)',
+        0.1,  'rgba(74,222,128,0.45)',
+        0.3,  'rgba(132,204,22,0.7)',
+        0.5,  'rgba(251,191,36,0.85)',
+        0.75, 'rgba(249,115,22,0.95)',
+        1,    'rgba(239,68,68,1)'
       ],
-      'heatmap-radius': ['interpolate', ['linear'], ['zoom'], 0, 8, 6, 30, 12, 50],
+      'heatmap-radius': ['interpolate', ['linear'], ['zoom'], 0, 14, 2, 22, 5, 36, 9, 60, 12, 80],
       'heatmap-opacity': 0
     }
   });
@@ -960,12 +971,16 @@ function toggleLayer(type, visible) {
 
 function toggleHeatmap(on) {
   CEA.heatmapOn = on;
-  CEA.map.setPaintProperty('layer-wind-heatmap', 'heatmap-opacity', on ? 0.7 : 0);
+  // v0.3.4: bump opacity so the heatmap reads at world zoom
+  CEA.map.setPaintProperty('layer-wind-heatmap', 'heatmap-opacity', on ? 0.85 : 0);
 }
 
 function toggleConnections(on) {
   CEA.connectionsOn = on;
-  var vis = (on && CEA.layerVisibility.datacenter) ? 'visible' : 'none';
+  // v0.3.4: DC Links no longer requires Data Centers layer to be toggled on first.
+  // The connection lines render whenever the user requests them — they're a separate
+  // visualization from the data-center markers.
+  var vis = on ? 'visible' : 'none';
   if (CEA.map.getLayer('layer-dc-connections')) {
     CEA.map.setLayoutProperty('layer-dc-connections', 'visibility', vis);
   }
@@ -1093,18 +1108,20 @@ function switchTheme(isDark) {
   // Rebuild style layers for background/water/borders
   var lang = CEA.currentLang;
   if (isDark) {
-    CEA.map.setPaintProperty('background', 'background-color', '#060d1a');
-    CEA.map.setPaintProperty('water', 'fill-color', '#071020');
-    if (CEA.map.getLayer('landcover')) CEA.map.setPaintProperty('landcover', 'fill-color', '#0f1e30');
-    if (CEA.map.getLayer('landuse')) CEA.map.setPaintProperty('landuse', 'fill-color', '#0e1c30');
-    CEA.map.setPaintProperty('boundary', 'line-color', '#2e4d72');
-    CEA.map.setPaintProperty('boundary', 'line-width', 1.2);
-    CEA.map.setPaintProperty('boundary', 'line-opacity', 0.85);
-    CEA.map.setPaintProperty('country-labels', 'text-color', '#4a7aaa');
-    CEA.map.setPaintProperty('country-labels', 'text-halo-color', '#060d1a');
+    // CEA v0.3.4 — dark theme: land = warm slate (silhouettes), ocean = near-black.
+    // Same paint-stack approach as light: background paints the land, water draws on top.
+    CEA.map.setPaintProperty('background', 'background-color', '#1f2940');   // land (warm slate)
+    CEA.map.setPaintProperty('water', 'fill-color', '#050a14');               // deep ocean
+    if (CEA.map.getLayer('landcover')) CEA.map.setPaintProperty('landcover', 'fill-color', '#2a3550');
+    if (CEA.map.getLayer('landuse')) CEA.map.setPaintProperty('landuse', 'fill-color', '#252f48');
+    CEA.map.setPaintProperty('boundary', 'line-color', '#5b7fb0');
+    CEA.map.setPaintProperty('boundary', 'line-width', 1.3);
+    CEA.map.setPaintProperty('boundary', 'line-opacity', 0.9);
+    CEA.map.setPaintProperty('country-labels', 'text-color', '#9bb8e0');
+    CEA.map.setPaintProperty('country-labels', 'text-halo-color', '#1f2940');
     if (CEA.map.getLayer('city-labels')) {
-      CEA.map.setPaintProperty('city-labels', 'text-color', '#3a6494');
-      CEA.map.setPaintProperty('city-labels', 'text-halo-color', '#060d1a');
+      CEA.map.setPaintProperty('city-labels', 'text-color', '#7ea8d8');
+      CEA.map.setPaintProperty('city-labels', 'text-halo-color', '#1f2940');
     }
   } else {
     // CEA v0.3.3 — high-contrast light theme: cream land background + saturated blue water on top
