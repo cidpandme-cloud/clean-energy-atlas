@@ -10,11 +10,12 @@
   --bg-panel: #0a1628;
   --bg-card: #0f1d33;
   --bg-hover: #162544;
-  --text-primary: #e8ecf2;
-  --text-secondary: #8b9dc3;
-  --text-muted: #5a6f8e;
-  --border: rgba(255,255,255,0.08);
-  --border-active: rgba(255,255,255,0.18);
+  --text-primary: #f4f7fb;
+  --text-secondary: #b8c8e0;
+  --text-muted: #8197b8;
+  --text-stat: #ffd66e;        /* CEA v0.3.5 — high-contrast stat number color */
+  --border: rgba(255,255,255,0.16);
+  --border-active: rgba(255,255,255,0.32);
 
   /* Energy colors */
   --color-wind: #4ade80;
@@ -48,11 +49,12 @@
   --bg-panel: #ffffff;
   --bg-card: #f8f9fb;
   --bg-hover: #e8ecf2;
-  --text-primary: #1a2332;
-  --text-secondary: #4a5568;
-  --text-muted: #8b9dc3;
-  --border: rgba(0,0,0,0.1);
-  --border-active: rgba(0,0,0,0.2);
+  --text-primary: #0f1820;
+  --text-secondary: #2d3a4f;
+  --text-muted: #5a6b85;
+  --text-stat: #b8541b;        /* CEA v0.3.5 — burnt-orange stat number on cream */
+  --border: rgba(0,0,0,0.22);
+  --border-active: rgba(0,0,0,0.42);
 }
 
 /* ===== RESET ===== */
@@ -632,10 +634,12 @@ body {
   white-space: nowrap;
 }
 .layer-count {
-  font-size: 10px;
-  font-weight: 600;
-  color: var(--text-muted);
+  /* CEA v0.3.5 — brighter, bolder count badge */
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-stat);
   font-variant-numeric: tabular-nums;
+  letter-spacing: 0.3px;
 }
 
 .layer-actions {
@@ -932,11 +936,13 @@ body {
   letter-spacing: 0.5px;
 }
 .stat-value {
+  /* CEA v0.3.5 — high-contrast stat numbers (gold in dark, burnt-orange in light) */
   font-family: var(--font-display);
   font-size: 13px;
   font-weight: 700;
-  color: var(--text-primary);
+  color: var(--text-stat);
   font-variant-numeric: tabular-nums;
+  letter-spacing: 0.2px;
 }
 
 /* ===== MODALS ===== */

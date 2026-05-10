@@ -149,6 +149,7 @@ function buildMapStyle(lang) {
         paint: { 'line-color': '#2e4d72', 'line-width': 0.7, 'line-opacity': 0.55, 'line-dasharray': [3, 2] }
       },
       {
+        // CEA v0.3.5 — country labels stay visible at all zooms (kept large at high zoom)
         id: 'country-labels',
         type: 'symbol',
         source: 'openfree',
@@ -157,56 +158,87 @@ function buildMapStyle(lang) {
         layout: {
           'text-field': textField,
           'text-font': ['Noto Sans Regular'],
-          'text-size': ['interpolate', ['linear'], ['zoom'], 1, 10, 4, 14, 6, 16],
+          'text-size': ['interpolate', ['linear'], ['zoom'], 1, 10, 4, 14, 6, 16, 10, 18],
           'text-transform': 'uppercase',
           'text-letter-spacing': 0.1,
-          'text-max-width': 8
+          'text-max-width': 8,
+          'text-allow-overlap': false,
+          'text-ignore-placement': false
         },
         paint: {
-          'text-color': '#4a7aaa',
+          'text-color': '#7ea5d2',
           'text-halo-color': '#060d1a',
-          'text-halo-width': 2
+          'text-halo-width': 2.2
         }
       },
       {
-        // CEA v0.3 Upgrade 5 — state / province name labels at zoom 4+
+        // CEA v0.3.5 — state labels appear earlier (z3) and persist at high zoom
         id: 'state-labels',
         type: 'symbol',
         source: 'openfree',
         'source-layer': 'place',
         filter: ['==', ['get', 'class'], 'state'],
-        minzoom: 4,
+        minzoom: 3,
         layout: {
           'text-field': textField,
           'text-font': ['Noto Sans Regular'],
-          'text-size': ['interpolate', ['linear'], ['zoom'], 4, 10, 7, 14],
+          'text-size': ['interpolate', ['linear'], ['zoom'], 3, 9, 5, 12, 8, 15, 12, 17],
           'text-transform': 'uppercase',
           'text-letter-spacing': 0.06,
           'text-max-width': 8
         },
         paint: {
-          'text-color': '#5e8ab4',
+          'text-color': '#8eb0d6',
+          'text-halo-color': '#060d1a',
+          'text-halo-width': 1.8
+        }
+      },
+      {
+        // CEA v0.3.5 — cities show all ranks at higher zooms so labels don't disappear when panning in
+        id: 'city-labels',
+        type: 'symbol',
+        source: 'openfree',
+        'source-layer': 'place',
+        filter: ['all',
+          ['==', ['get', 'class'], 'city'],
+          ['>=', ['get', 'rank'], 0],
+          ['<=', ['get', 'rank'], 12]
+        ],
+        minzoom: 3,
+        layout: {
+          'text-field': textField,
+          'text-font': ['Noto Sans Regular'],
+          'text-size': ['interpolate', ['linear'], ['zoom'], 3, 9, 5, 11, 8, 14, 12, 16],
+          'text-max-width': 8
+        },
+        paint: {
+          'text-color': '#6f95c4',
           'text-halo-color': '#060d1a',
           'text-halo-width': 1.6
         }
       },
       {
-        id: 'city-labels',
+        // CEA v0.3.5 — town/village labels at high zoom for orientation when panned in close
+        id: 'town-labels',
         type: 'symbol',
         source: 'openfree',
         'source-layer': 'place',
-        filter: ['all', ['==', ['get', 'class'], 'city'], ['>=', ['get', 'rank'], 1], ['<=', ['get', 'rank'], 8]],
-        minzoom: 4,
+        filter: ['any',
+          ['==', ['get', 'class'], 'town'],
+          ['==', ['get', 'class'], 'village'],
+          ['==', ['get', 'class'], 'suburb']
+        ],
+        minzoom: 7,
         layout: {
           'text-field': textField,
           'text-font': ['Noto Sans Regular'],
-          'text-size': ['interpolate', ['linear'], ['zoom'], 4, 10, 8, 14],
+          'text-size': ['interpolate', ['linear'], ['zoom'], 7, 10, 12, 14],
           'text-max-width': 8
         },
         paint: {
-          'text-color': '#3a6494',
+          'text-color': '#5a7da8',
           'text-halo-color': '#060d1a',
-          'text-halo-width': 1.5
+          'text-halo-width': 1.4
         }
       }
     ]
@@ -258,6 +290,9 @@ function buildLightStyle(lang) {
   setLayer('country-labels', 'text-halo-color', LAND);
   setLayer('city-labels', 'text-color', '#2a3850');
   setLayer('city-labels', 'text-halo-color', LAND);
+  // CEA v0.3.5 — town/village labels for orientation when zoomed in close (light mode)
+  setLayer('town-labels', 'text-color', '#3a4a64');
+  setLayer('town-labels', 'text-halo-color', LAND);
 
   // Safety net: keep land-tone for any unexpected fill, but DO NOT touch other backgrounds
   // (the previous behavior of forcing background to OCEAN was masking the bug).
@@ -1117,11 +1152,19 @@ function switchTheme(isDark) {
     CEA.map.setPaintProperty('boundary', 'line-color', '#5b7fb0');
     CEA.map.setPaintProperty('boundary', 'line-width', 1.3);
     CEA.map.setPaintProperty('boundary', 'line-opacity', 0.9);
-    CEA.map.setPaintProperty('country-labels', 'text-color', '#9bb8e0');
-    CEA.map.setPaintProperty('country-labels', 'text-halo-color', '#1f2940');
+    CEA.map.setPaintProperty('country-labels', 'text-color', '#cfdcf0');
+    CEA.map.setPaintProperty('country-labels', 'text-halo-color', '#0a0f1c');
+    if (CEA.map.getLayer('state-labels')) {
+      CEA.map.setPaintProperty('state-labels', 'text-color', '#a8bfdb');
+      CEA.map.setPaintProperty('state-labels', 'text-halo-color', '#0a0f1c');
+    }
     if (CEA.map.getLayer('city-labels')) {
-      CEA.map.setPaintProperty('city-labels', 'text-color', '#7ea8d8');
-      CEA.map.setPaintProperty('city-labels', 'text-halo-color', '#1f2940');
+      CEA.map.setPaintProperty('city-labels', 'text-color', '#94afd0');
+      CEA.map.setPaintProperty('city-labels', 'text-halo-color', '#0a0f1c');
+    }
+    if (CEA.map.getLayer('town-labels')) {
+      CEA.map.setPaintProperty('town-labels', 'text-color', '#7e9bbf');
+      CEA.map.setPaintProperty('town-labels', 'text-halo-color', '#0a0f1c');
     }
   } else {
     // CEA v0.3.3 — high-contrast light theme: cream land background + saturated blue water on top
@@ -1133,9 +1176,17 @@ function switchTheme(isDark) {
     CEA.map.setPaintProperty('boundary', 'line-width', 1.4);
     CEA.map.setPaintProperty('country-labels', 'text-color', '#1a2840');
     CEA.map.setPaintProperty('country-labels', 'text-halo-color', '#f4ecd8');
+    if (CEA.map.getLayer('state-labels')) {
+      CEA.map.setPaintProperty('state-labels', 'text-color', '#2a3850');
+      CEA.map.setPaintProperty('state-labels', 'text-halo-color', '#f4ecd8');
+    }
     if (CEA.map.getLayer('city-labels')) {
       CEA.map.setPaintProperty('city-labels', 'text-color', '#2a3850');
       CEA.map.setPaintProperty('city-labels', 'text-halo-color', '#f4ecd8');
+    }
+    if (CEA.map.getLayer('town-labels')) {
+      CEA.map.setPaintProperty('town-labels', 'text-color', '#3a4a64');
+      CEA.map.setPaintProperty('town-labels', 'text-halo-color', '#f4ecd8');
     }
   }
 }
